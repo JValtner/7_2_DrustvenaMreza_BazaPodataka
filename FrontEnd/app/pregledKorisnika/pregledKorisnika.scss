@@ -1,0 +1,29 @@
+@use "../style";
+#sucess-msg{
+    visibility: hidden;
+}
+.user-data {
+    margin: auto;
+    width: 60%;
+    border: 2px solid white;
+    border-collapse: collapse;
+    border-spacing: 0 5px;
+
+    .user-data-head {
+        th {
+            background-color: style.$table-h-color;
+            padding: 10px;
+            margin: 5px; 
+        }
+    }
+
+    tr {
+        td {
+        padding: 10px;
+        }
+
+        &:hover {
+        background-color: style.$table-row-color-hover;
+        }
+    }
+}

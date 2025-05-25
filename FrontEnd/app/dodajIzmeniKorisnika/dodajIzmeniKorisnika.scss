@@ -1,0 +1,35 @@
+@use "../style";
+
+.form-container{
+    text-align: left;
+    width:80%;
+    .form-row{
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-content: center;
+        justify-content: space-evenly;
+        label{
+            width:300px;
+        }
+        input{
+            width:300px;
+            &:hover{
+                background-color: style.$table-row-color-hover;
+            }
+        }
+        
+    }
+    .form-row-Btn{
+        margin-top: 20px;
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: space-evenly;
+        button{
+            margin-left: 20px;
+            margin-right: 20px;
+        }
+    }
+}
+

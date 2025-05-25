@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drustvena mreza</title>
+    <link rel="stylesheet" href="../../dist/dodajGrupu/dodajGrupu.css">
+</head>
+<body>
+    <nav class="navbar">
+        <h1 class="title">Drustvena mreza</h1>
+        <ul class="nav-links">
+            <li><a href="../pregledGrupa/pregledGrupa.html">Grupe</a></li>
+            <li><a href="../pregledKorisnika/pregledKorisnika.html">Korisnici</a></li>
+        </ul>
+    </nav>
+
+    <section class="site-description">
+        <hr>
+        <h2>Dodaj Korisnika</h2>
+        <hr>
+       
+    </section>
+    
+    <section class="main-content">
+        <div class="form-container">
+            <form id="form-data">
+                <div class="form-row">
+                    <label for="nazivGrupe">Naziv Grupe: </label>
+                    <input id="nazivGrupe" type="text" name="nazivGrupe" required>
+                </div>
+                <div class="form-row">
+                    <label for="datumOsnivanja">Datum osnivanja: </label>
+                    <input id="datumOsnivanja" type="date" value="2000-01-01" name="datumOsnivanja" required>
+                </div>
+                <div class="form-row">                    
+                    <button type="submit" id="form-submit-Btn" >Potvrdi</button>
+                </div>
+                <div class="form-row">
+                    <p id="error-msg"></p>
+                </div>
+            </form>
+        </div>
+        
+    </section>
+
+    <script src="dodajGrupu.js"></script>
+</body>
+</html>
+
