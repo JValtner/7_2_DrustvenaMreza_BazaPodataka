@@ -28,7 +28,7 @@ namespace _6_1_drustvena_mreza.Controllers
             return Ok(grupe);
         }
         [HttpGet("{grupaId}")]
-        public ActionResult<Grupa> GetGroup(int grupaId)
+        public ActionResult<Grupa> GetById(int grupaId)
         {   
             Grupa grupa = groupDbRepo.GetGroup(grupaId);
             if (grupa ==null)
@@ -41,26 +41,43 @@ namespace _6_1_drustvena_mreza.Controllers
         // POST api/groups
         [HttpPost]
         public ActionResult<Grupa> Create([FromBody] Grupa newGrupa)
-        {
-            if (string.IsNullOrWhiteSpace(newGrupa.Ime) || string.IsNullOrWhiteSpace(newGrupa.DatumOsnivanja.ToString("yyyy-MM-dd")))
+        {   
+            int rowsAfected = groupDbRepo.NewGroup(newGrupa);
+            if (rowsAfected == 0 || string.IsNullOrWhiteSpace(newGrupa.Ime) || string.IsNullOrWhiteSpace(newGrupa.DatumOsnivanja.ToString("yyyy-MM-dd")))
             {
                 return BadRequest();
             }
-            groupDbRepo.NewGroup(newGrupa);
+            
 
             return Ok(newGrupa);
         }
-        [HttpDelete("{id}")]
-        public ActionResult Delete(int id)
+
+        [HttpPut("{grupaId}")]
+        public ActionResult<Grupa> Update(int grupaId, [FromBody] Grupa grupaAzurirana)
         {
-            if (!GrupaRepo.grupaRepo.ContainsKey(id))
+            Grupa grupa = groupDbRepo.GetGroup(grupaId);
+            grupa.Ime = grupaAzurirana.Ime;
+            grupa.DatumOsnivanja = grupaAzurirana.DatumOsnivanja;
+            int rowsAfected = groupDbRepo.UpdateGroup(grupaId,grupa);
+            if ( string.IsNullOrWhiteSpace(grupaAzurirana.Ime) || string.IsNullOrWhiteSpace(grupaAzurirana.DatumOsnivanja.ToString("yyyy-MM-dd")))
+            {
+                return BadRequest();
+            }
+            if (rowsAfected == 0 || grupa == null)
             {
                 return NotFound();
             }
+            return Ok(grupaAzurirana);
+        }
 
-            GrupaRepo.grupaRepo.Remove(id);
-            grupaRepo.Sacuvaj();
-
+        [HttpDelete("{grupaId}")]
+        public ActionResult Delete(int grupaId)
+        {
+            int rowsAfected = groupDbRepo.DeleteGroup(grupaId); 
+            if (rowsAfected == 0)
+            {
+                return NotFound();
+            }
             return NoContent();
         }
     }

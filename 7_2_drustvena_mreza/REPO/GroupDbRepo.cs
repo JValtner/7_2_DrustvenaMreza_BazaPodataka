@@ -24,8 +24,7 @@ namespace _7_2_drustvena_mreza.REPO
                     int id = Convert.ToInt32(reader["Id"]);
                     string ime = reader["Name"].ToString();
 
-                    DateTime datumOsnivanja = DateTime.ParseExact(reader["CreationDate"].ToString(), "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture
-);
+                    DateTime datumOsnivanja = DateTime.ParseExact(reader["CreationDate"].ToString(), "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
                     Grupa g = new Grupa(id, ime, datumOsnivanja);
                     listaGrupa.Add(g);
                 }
@@ -96,7 +95,7 @@ namespace _7_2_drustvena_mreza.REPO
             }
 
         }
-        public void NewGroup(Grupa grupa)
+        public int NewGroup(Grupa grupa)
         {
             try
             {
@@ -106,27 +105,101 @@ namespace _7_2_drustvena_mreza.REPO
                 string query = "INSERT INTO Groups (Name,CreationDate) VALUES (@Ime, @DatumOsnivanja)";
                 using SqliteCommand command = new SqliteCommand(query, connection);
                 command.Parameters.AddWithValue("@Ime", grupa.Ime);
-                command.Parameters.AddWithValue("@Id", grupa.DatumOsnivanja.ToString("yyyy-MM-dd"));
-                using SqliteDataReader reader = command.ExecuteReader();
-                
+                command.Parameters.AddWithValue("@DatumOsnivanja", grupa.DatumOsnivanja.ToString("yyyy-MM-dd"));
+                return command.ExecuteNonQuery();
+
             }
             catch (SqliteException ex)
             {
                 Console.WriteLine($"Greška pri konekciji ili izvršavanju neispravnih SQL upita: {ex.Message}");
+                return 0;
             }
             catch (FormatException ex)
             {
                 Console.WriteLine($"Greška u konverziji podataka iz baze: {ex.Message}");
+                return 0;
             }
             catch (InvalidOperationException ex)
             {
                 Console.WriteLine($"Konekcija nije otvorena ili je otvorena više puta: {ex.Message}");
+                return 0;
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Neočekivana greška: {ex.Message}");
+                return 0;
             }
+        }
+        public int UpdateGroup(int grupaId,Grupa grupa)
+        {
+            try
+            {
+                using SqliteConnection connection = new SqliteConnection("Data Source=DATABASE/DrustveneMrezeDB.db");
+                connection.Open();
 
+                string query = "UPDATE Groups SET Name = @Ime, CreationDate = @DatumOsnivanja WHERE Id=@Id ";
+                using SqliteCommand command = new SqliteCommand(query, connection);
+                command.Parameters.AddWithValue("@Id", grupa.Id);
+                command.Parameters.AddWithValue("@Ime", grupa.Ime);
+                command.Parameters.AddWithValue("@DatumOsnivanja", grupa.DatumOsnivanja.ToString("yyyy-MM-dd"));
+                return command.ExecuteNonQuery();
+
+            }
+            catch (SqliteException ex)
+            {
+                Console.WriteLine($"Greška pri konekciji ili izvršavanju neispravnih SQL upita: {ex.Message}");
+                return 0;
+            }
+            catch (FormatException ex)
+            {
+                Console.WriteLine($"Greška u konverziji podataka iz baze: {ex.Message}");
+                return 0;
+            }
+            catch (InvalidOperationException ex)
+            {
+                Console.WriteLine($"Konekcija nije otvorena ili je otvorena više puta: {ex.Message}");
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Neočekivana greška: {ex.Message}");
+                return 0;
+            }
+        }
+
+        public int DeleteGroup(int grupaId)
+        {
+            try
+            {
+                using SqliteConnection connection = new SqliteConnection("Data Source=DATABASE/DrustveneMrezeDB.db");
+                connection.Open();
+
+                string query = "DELETE FROM Groups WHERE Id=@Id";
+                using SqliteCommand command = new SqliteCommand(query, connection);
+                command.Parameters.AddWithValue("@Id",grupaId);
+                return command.ExecuteNonQuery();
+
+            }
+            catch (SqliteException ex)
+            {
+                Console.WriteLine($"Greška pri konekciji ili izvršavanju neispravnih SQL upita: {ex.Message}");
+                return 0;
+            }
+            catch (FormatException ex)
+            {
+                Console.WriteLine($"Greška u konverziji podataka iz baze: {ex.Message}");
+                return 0;
+            }
+            catch (InvalidOperationException ex)
+            {
+                Console.WriteLine($"Konekcija nije otvorena ili je otvorena više puta: {ex.Message}");
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Neočekivana greška: {ex.Message}");
+                return 0;
+            }
         }
     }
 }
