@@ -1,6 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
 using _6_1_drustvena_mreza.DOMEN;
 using _6_1_drustvena_mreza.REPO;
+using _7_2_drustvena_mreza.REPO;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.Sqlite;
@@ -13,12 +14,13 @@ namespace _6_1_drustvena_mreza.Controllers
     {
         private GrupaRepo grupaRepo = new GrupaRepo();
         private KorisnikRepo korisnikRepo = new KorisnikRepo();
+        private GroupDbRepo groupDbRepo = new GroupDbRepo();
 
         // Get api/groups
         [HttpGet]
         public ActionResult<List<Grupa>> GetAll()
         {
-            List<Grupa> grupe = GetAllFromDatabase();
+            List<Grupa> grupe = groupDbRepo.GetAll();
             if (grupe == null) 
             { 
                 return NotFound("Ne postoji ni jedna grupa");
@@ -26,104 +28,57 @@ namespace _6_1_drustvena_mreza.Controllers
             return Ok(grupe);
         }
         [HttpGet("{grupaId}")]
-        public ActionResult<Korisnik> NadjiKorisnikaGrupeId(int grupaId)
-        {
-            if (!GrupaRepo.grupaRepo.ContainsKey(grupaId))
+        public ActionResult<Grupa> GetById(int grupaId)
+        {   
+            Grupa grupa = groupDbRepo.GetGroup(grupaId);
+            if (grupa ==null)
             {
                 return NotFound("Takva grupa ne postoji");
             }
-            List<Korisnik> listakorisnikaGrupe = korisnikRepo.NadjiKorisnike(grupaId);
-
-            return Ok(listakorisnikaGrupe);
+            return Ok(grupa);
         }
-
-
+        
         // POST api/groups
         [HttpPost]
         public ActionResult<Grupa> Create([FromBody] Grupa newGrupa)
-        {
-            if (string.IsNullOrWhiteSpace(newGrupa.Ime) || string.IsNullOrWhiteSpace(newGrupa.DatumOsnivanja.ToString("yyyy-MM-dd")))
+        {   
+            int rowsAfected = groupDbRepo.NewGroup(newGrupa);
+            if (rowsAfected == 0 || string.IsNullOrWhiteSpace(newGrupa.Ime) || string.IsNullOrWhiteSpace(newGrupa.DatumOsnivanja.ToString("yyyy-MM-dd")))
             {
                 return BadRequest();
             }
-            newGrupa.Id = SracunajNoviId(GrupaRepo.grupaRepo.Keys.ToList());
-            GrupaRepo.grupaRepo[newGrupa.Id] = newGrupa;
-            grupaRepo.Sacuvaj();
+            
 
             return Ok(newGrupa);
         }
-        [HttpDelete("{id}")]
-        public ActionResult Delete(int id)
+
+        [HttpPut("{grupaId}")]
+        public ActionResult<Grupa> Update(int grupaId, [FromBody] Grupa grupaAzurirana)
         {
-            if (!GrupaRepo.grupaRepo.ContainsKey(id))
+            Grupa grupa = groupDbRepo.GetGroup(grupaId);
+            grupa.Ime = grupaAzurirana.Ime;
+            grupa.DatumOsnivanja = grupaAzurirana.DatumOsnivanja;
+            int rowsAfected = groupDbRepo.UpdateGroup(grupaId,grupa);
+            if ( string.IsNullOrWhiteSpace(grupaAzurirana.Ime) || string.IsNullOrWhiteSpace(grupaAzurirana.DatumOsnivanja.ToString("yyyy-MM-dd")))
+            {
+                return BadRequest();
+            }
+            if (rowsAfected == 0 || grupa == null)
             {
                 return NotFound();
             }
-
-            GrupaRepo.grupaRepo.Remove(id);
-            grupaRepo.Sacuvaj();
-
-            return NoContent();
+            return Ok(grupaAzurirana);
         }
 
-        private int SracunajNoviId(List<int> identifikatori)
+        [HttpDelete("{grupaId}")]
+        public ActionResult Delete(int grupaId)
         {
-            int maxId = 0;
-            foreach (int id in identifikatori)
+            int rowsAfected = groupDbRepo.DeleteGroup(grupaId); 
+            if (rowsAfected == 0)
             {
-                if (id > maxId)
-                {
-                    maxId = id;
-                }
+                return NotFound();
             }
-
-            return maxId + 1;
-        } 
-        private List<Grupa> GetAllFromDatabase()
-        {
-            List<Grupa> listaGrupa = new List<Grupa>();
-            try
-            {
-                using SqliteConnection connection = new SqliteConnection("Data Source=DATABASE/DrustveneMrezeDB.db");
-                connection.Open();
-
-                string query = "SELECT Id, Name, CreationDate FROM Groups";
-                using SqliteCommand command = new SqliteCommand(query, connection);
-
-                using SqliteDataReader reader = command.ExecuteReader();
-                while (reader.Read())
-                {
-                    int id = Convert.ToInt32(reader["Id"]);
-                    string ime = reader["Name"].ToString();
-
-                    DateTime datumOsnivanja = DateTime.ParseExact(reader["CreationDate"].ToString(),"yyyy-MM-dd",System.Globalization.CultureInfo.InvariantCulture
-);
-                    Grupa g = new Grupa(id, ime, datumOsnivanja);
-                    listaGrupa.Add(g);
-                }
-                return listaGrupa;
-            }
-            catch (SqliteException ex)
-            {
-                Console.WriteLine($"Greška pri konekciji ili izvršavanju neispravnih SQL upita: {ex.Message}");
-                return null;
-            }
-            catch (FormatException ex)
-            {
-                return null;
-                Console.WriteLine($"Greška u konverziji podataka iz baze: {ex.Message}");
-            }
-            catch (InvalidOperationException ex)
-            {
-                return null;
-                Console.WriteLine($"Konekcija nije otvorena ili je otvorena više puta: {ex.Message}");
-            }
-            catch (Exception ex)
-            {
-                return null;
-                Console.WriteLine($"Neočekivana greška: {ex.Message}");
-            }
-
+            return NoContent();
         }
     }
 }
