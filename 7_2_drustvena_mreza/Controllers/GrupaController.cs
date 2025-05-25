@@ -1,8 +1,9 @@
-﻿using _6_1_drustvena_mreza.DOMEN;
+﻿using System.Runtime.CompilerServices;
+using _6_1_drustvena_mreza.DOMEN;
 using _6_1_drustvena_mreza.REPO;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System.Runtime.CompilerServices;
+using Microsoft.Data.Sqlite;
 
 namespace _6_1_drustvena_mreza.Controllers
 {
@@ -17,7 +18,11 @@ namespace _6_1_drustvena_mreza.Controllers
         [HttpGet]
         public ActionResult<List<Grupa>> GetAll()
         {
-            List<Grupa> grupe = GrupaRepo.grupaRepo.Values.ToList();
+            List<Grupa> grupe = GetAllFromDatabase();
+            if (grupe == null) 
+            { 
+                return NotFound("Ne postoji ni jedna grupa");
+            }
             return Ok(grupe);
         }
         [HttpGet("{grupaId}")]
@@ -74,5 +79,51 @@ namespace _6_1_drustvena_mreza.Controllers
 
             return maxId + 1;
         } 
+        private List<Grupa> GetAllFromDatabase()
+        {
+            List<Grupa> listaGrupa = new List<Grupa>();
+            try
+            {
+                using SqliteConnection connection = new SqliteConnection("Data Source=DATABASE/DrustveneMrezeDB.db");
+                connection.Open();
+
+                string query = "SELECT Id, Name, CreationDate FROM Groups";
+                using SqliteCommand command = new SqliteCommand(query, connection);
+
+                using SqliteDataReader reader = command.ExecuteReader();
+                while (reader.Read())
+                {
+                    int id = Convert.ToInt32(reader["Id"]);
+                    string ime = reader["Name"].ToString();
+
+                    DateTime datumOsnivanja = DateTime.ParseExact(reader["CreationDate"].ToString(),"yyyy-MM-dd",System.Globalization.CultureInfo.InvariantCulture
+);
+                    Grupa g = new Grupa(id, ime, datumOsnivanja);
+                    listaGrupa.Add(g);
+                }
+                return listaGrupa;
+            }
+            catch (SqliteException ex)
+            {
+                Console.WriteLine($"Greška pri konekciji ili izvršavanju neispravnih SQL upita: {ex.Message}");
+                return null;
+            }
+            catch (FormatException ex)
+            {
+                return null;
+                Console.WriteLine($"Greška u konverziji podataka iz baze: {ex.Message}");
+            }
+            catch (InvalidOperationException ex)
+            {
+                return null;
+                Console.WriteLine($"Konekcija nije otvorena ili je otvorena više puta: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                return null;
+                Console.WriteLine($"Neočekivana greška: {ex.Message}");
+            }
+
+        }
     }
 }
