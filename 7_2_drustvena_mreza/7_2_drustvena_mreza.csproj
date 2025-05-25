@@ -4,7 +4,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <RootNamespace>_6_1_drustvena_mreza</RootNamespace>
+    <RootNamespace>_7_2_drustvena_mreza</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
