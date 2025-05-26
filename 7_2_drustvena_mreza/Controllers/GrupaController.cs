@@ -5,6 +5,7 @@ using _7_2_drustvena_mreza.REPO;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.Sqlite;
+using static System.Reflection.Metadata.BlobBuilder;
 
 namespace _6_1_drustvena_mreza.Controllers
 {
@@ -20,18 +21,28 @@ namespace _6_1_drustvena_mreza.Controllers
         {
             groupDbRepo = new GroupDbRepo(configuration);
         }
-        // Get api/groups
+        // Get api/groups/?page={page}&pageSize={pageSize}
         [HttpGet]
-        public ActionResult<List<Grupa>> GetAll()
+        public ActionResult GetPaged([FromQuery] int page = 1, [FromQuery] int pageSize=10)
         {
+            if (page < 1 || pageSize < 1)
+            {
+                return BadRequest("Page and PageSize must be greater than zero.");
+            }
             try
             {
-                List<Grupa> grupe = groupDbRepo.GetAll();
+                List<Grupa> grupe = groupDbRepo.GetPaged(page, pageSize);
+                int totalCount = groupDbRepo.CountAll();
                 if (grupe == null)
                 {
                     return NotFound("Ne postoji ni jedna grupa");
                 }
-                return Ok(grupe);
+                Object result = new
+                {
+                    Data = grupe,
+                    TotalCount = totalCount
+                };
+                return Ok(result);
             }
             catch (Exception ex)
             {

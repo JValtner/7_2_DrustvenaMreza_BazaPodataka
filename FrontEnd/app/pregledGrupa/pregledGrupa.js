@@ -27,14 +27,19 @@ function saveLocalStorage(grupe) {
 }
 
 function loadGroups(){
-  fetch('http://localhost:14117/api/groups') 
+  fetch('http://localhost:14117/api/groups?page=1&pageSize=2') //Dodati funkciju za paginaciju
     .then(response => {
       if (!response.ok) {
         throw new Error('Request failed. Status: ' + response.status)
       }
       return response.json()
     })
-    .then(grupe => createDataTable(grupe))  
+    .then(grupe => {
+        const groups = grupe.data
+        const total = grupe.totalCount
+        createDataTable(groups, total)
+        // total ce se dalje koristiti u paginaciji 
+    }) 
     .catch(error => {                  
       console.error('Error:', error.message)
       alert('An error occurred while loading the data. Please try again.')
@@ -50,7 +55,7 @@ function createDataTable(grupe) {
                     <th>Id</th>             
                     <th>Naziv Grupe</th>        
                     <th>Datum rodjenja</th>                     
-                    <th>Brisanje</th> 
+                    <th>Opcije</th> 
                 </tr>
             </thead>
             <tbody id="user-data-body">
@@ -122,5 +127,6 @@ function showSuccess() {
         successMsg.style.opacity = "0"
     }, 3000)
 }
+
 
 document.addEventListener('DOMContentLoaded', initializeGroup)
