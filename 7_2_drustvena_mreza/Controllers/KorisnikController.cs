@@ -1,6 +1,7 @@
 ﻿using System;
 using _6_1_drustvena_mreza.DOMEN;
 using _6_1_drustvena_mreza.REPO;
+using _7_2_drustvena_mreza.REPO;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.Sqlite;
 
@@ -11,11 +12,12 @@ namespace _6_1_Drustvena_Mreza.Controllers
     public class KorisnikController : ControllerBase
     {
         private KorisnikRepo korisnikRepo = new KorisnikRepo();
+        private UserDbRepository userDbRepository = new UserDbRepository();
 
         [HttpGet]
         public ActionResult<List<Korisnik>> GetAll()
         {
-            List<Korisnik> korisnici = GetAllFromDatabase();
+            List<Korisnik> korisnici = userDbRepository.GetAll();
             if (korisnici == null)
             {
                 return NotFound("Ne postoji ni jedna grupa");
@@ -26,11 +28,13 @@ namespace _6_1_Drustvena_Mreza.Controllers
         [HttpGet("{id}")]
         public ActionResult<Korisnik> GetById(int id)
         {
-            if (!KorisnikRepo.korisnikRepo.ContainsKey(id))
+            Korisnik korisnik = userDbRepository.GetById(id);
+
+            if (korisnik == null)
             {
                 return NotFound();
             }
-            return Ok(KorisnikRepo.korisnikRepo[id]);
+            return Ok(korisnik);
         }
 
 
@@ -99,56 +103,7 @@ namespace _6_1_Drustvena_Mreza.Controllers
             }
             return maxId + 1;
         }
-
-        private List<Korisnik> GetAllFromDatabase()
-        {
-            List<Korisnik> listaKorisnika = new List<Korisnik>();
-            try
-            {
-                using SqliteConnection connection = new SqliteConnection("Data Source=DATABASE/DrustveneMrezeDB.db");
-                connection.Open();
-
-                string query = "SELECT * FROM Users";
-                using SqliteCommand command = new SqliteCommand(query, connection);
-
-                using SqliteDataReader reader = command.ExecuteReader();
-                while (reader.Read())
-                {
-                    int id = Convert.ToInt32(reader["Id"]);
-                    string KorisnickoIme = reader["Username"].ToString();
-                    string Ime = reader["Name"].ToString();
-                    string Prezime = reader["Surname"].ToString();
-
-                    DateTime DatumRodjenja = DateTime.ParseExact(reader["Birthday"].ToString(), "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture
-);
-                    Korisnik k = new Korisnik(id, KorisnickoIme, Ime, Prezime, DatumRodjenja);
-                    listaKorisnika.Add(k);
-                }
-                return listaKorisnika;
-            }
-            catch (SqliteException ex)
-            {
-                Console.WriteLine($"Greška pri konekciji ili izvršavanju neispravnih SQL upita: {ex.Message}");                
-                return null;
-
-            }
-            catch (FormatException ex)
-            {
-                Console.WriteLine($"Greška u konverziji podataka iz baze: {ex.Message}");
-                return null;
-            }
-            catch (InvalidOperationException ex)
-            {
-                Console.WriteLine($"Konekcija nije otvorena ili je otvorena više puta: {ex.Message}");
-                return null;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Neočekivana greška: {ex.Message}");
-                return null;
-            }
-
-        }
+               
     }
 }
 
