@@ -7,12 +7,18 @@ namespace _7_2_drustvena_mreza.REPO
 {
     public class GroupDbRepo
     {
+        private readonly string connectionString;
+
+        public GroupDbRepo(IConfiguration configuration)
+        {
+            connectionString = configuration["ConnectionString:SQLiteConnection"];
+        }
         public List<Grupa> GetAll()
         {
             List<Grupa> listaGrupa = new List<Grupa>();
             try
             {
-                using SqliteConnection connection = new SqliteConnection("Data Source=DATABASE/DrustveneMrezeDB.db");
+                using SqliteConnection connection = new SqliteConnection(connectionString);
                 connection.Open();
 
                 string query = "SELECT Id, Name, CreationDate FROM Groups";
@@ -33,22 +39,22 @@ namespace _7_2_drustvena_mreza.REPO
             catch (SqliteException ex)
             {
                 Console.WriteLine($"Greška pri konekciji ili izvršavanju neispravnih SQL upita: {ex.Message}");
-                return null;
+                throw;
             }
             catch (FormatException ex)
             {
-                return null;
                 Console.WriteLine($"Greška u konverziji podataka iz baze: {ex.Message}");
+                throw;
             }
             catch (InvalidOperationException ex)
             {
-                return null;
                 Console.WriteLine($"Konekcija nije otvorena ili je otvorena više puta: {ex.Message}");
+                throw;
             }
             catch (Exception ex)
             {
-                return null;
                 Console.WriteLine($"Neočekivana greška: {ex.Message}");
+                throw;
             }
 
         }
@@ -56,7 +62,7 @@ namespace _7_2_drustvena_mreza.REPO
         {
             try
             {
-                using SqliteConnection connection = new SqliteConnection("Data Source=DATABASE/DrustveneMrezeDB.db");
+                using SqliteConnection connection = new SqliteConnection(connectionString);
                 connection.Open();
 
                 string query = "SELECT Id, Name, CreationDate FROM Groups WHERE Id=@Id";
@@ -76,22 +82,22 @@ namespace _7_2_drustvena_mreza.REPO
             catch (SqliteException ex)
             {
                 Console.WriteLine($"Greška pri konekciji ili izvršavanju neispravnih SQL upita: {ex.Message}");
-                return null;
+                throw;
             }
             catch (FormatException ex)
             {
-                return null;
+                throw;
                 Console.WriteLine($"Greška u konverziji podataka iz baze: {ex.Message}");
             }
             catch (InvalidOperationException ex)
             {
-                return null;
                 Console.WriteLine($"Konekcija nije otvorena ili je otvorena više puta: {ex.Message}");
+                throw;
             }
             catch (Exception ex)
             {
-                return null;
                 Console.WriteLine($"Neočekivana greška: {ex.Message}");
+                throw;
             }
 
         }
@@ -99,7 +105,7 @@ namespace _7_2_drustvena_mreza.REPO
         {
             try
             {
-                using SqliteConnection connection = new SqliteConnection("Data Source=DATABASE/DrustveneMrezeDB.db");
+                using SqliteConnection connection = new SqliteConnection(connectionString);
                 connection.Open();
 
                 string query = "INSERT INTO Groups (Name,CreationDate) VALUES (@Ime, @DatumOsnivanja)";
@@ -112,29 +118,29 @@ namespace _7_2_drustvena_mreza.REPO
             catch (SqliteException ex)
             {
                 Console.WriteLine($"Greška pri konekciji ili izvršavanju neispravnih SQL upita: {ex.Message}");
-                return 0;
+                throw;
             }
             catch (FormatException ex)
             {
                 Console.WriteLine($"Greška u konverziji podataka iz baze: {ex.Message}");
-                return 0;
+                throw;
             }
             catch (InvalidOperationException ex)
             {
                 Console.WriteLine($"Konekcija nije otvorena ili je otvorena više puta: {ex.Message}");
-                return 0;
+                throw;
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Neočekivana greška: {ex.Message}");
-                return 0;
+                throw;
             }
         }
         public int UpdateGroup(int grupaId,Grupa grupa)
         {
             try
             {
-                using SqliteConnection connection = new SqliteConnection("Data Source=DATABASE/DrustveneMrezeDB.db");
+                using SqliteConnection connection = new SqliteConnection(connectionString);
                 connection.Open();
 
                 string query = "UPDATE Groups SET Name = @Ime, CreationDate = @DatumOsnivanja WHERE Id=@Id ";
@@ -148,22 +154,22 @@ namespace _7_2_drustvena_mreza.REPO
             catch (SqliteException ex)
             {
                 Console.WriteLine($"Greška pri konekciji ili izvršavanju neispravnih SQL upita: {ex.Message}");
-                return 0;
+                throw;
             }
             catch (FormatException ex)
             {
                 Console.WriteLine($"Greška u konverziji podataka iz baze: {ex.Message}");
-                return 0;
+                throw;
             }
             catch (InvalidOperationException ex)
             {
                 Console.WriteLine($"Konekcija nije otvorena ili je otvorena više puta: {ex.Message}");
-                return 0;
+                throw;
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Neočekivana greška: {ex.Message}");
-                return 0;
+                throw;
             }
         }
 
@@ -171,7 +177,7 @@ namespace _7_2_drustvena_mreza.REPO
         {
             try
             {
-                using SqliteConnection connection = new SqliteConnection("Data Source=DATABASE/DrustveneMrezeDB.db");
+                using SqliteConnection connection = new SqliteConnection(connectionString);
                 connection.Open();
 
                 string query = "DELETE FROM Groups WHERE Id=@Id";
@@ -183,22 +189,22 @@ namespace _7_2_drustvena_mreza.REPO
             catch (SqliteException ex)
             {
                 Console.WriteLine($"Greška pri konekciji ili izvršavanju neispravnih SQL upita: {ex.Message}");
-                return 0;
+                throw;
             }
             catch (FormatException ex)
             {
                 Console.WriteLine($"Greška u konverziji podataka iz baze: {ex.Message}");
-                return 0;
+                throw;
             }
             catch (InvalidOperationException ex)
             {
                 Console.WriteLine($"Konekcija nije otvorena ili je otvorena više puta: {ex.Message}");
-                return 0;
+                throw;
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Neočekivana greška: {ex.Message}");
-                return 0;
+                throw;
             }
         }
     }

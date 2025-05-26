@@ -12,10 +12,14 @@ namespace _6_1_drustvena_mreza.Controllers
     [ApiController]
     public class GrupaController : ControllerBase
     {
-        private GrupaRepo grupaRepo = new GrupaRepo();
-        private KorisnikRepo korisnikRepo = new KorisnikRepo();
-        private GroupDbRepo groupDbRepo = new GroupDbRepo();
 
+        private readonly GroupDbRepo groupDbRepo;
+
+        // Konstruktor koji poziva ASP.NET i automatski dostavlja instancu za IConfiguration parametar
+        public GrupaController(IConfiguration configuration)
+        {
+            groupDbRepo = new GroupDbRepo(configuration);
+        }
         // Get api/groups
         [HttpGet]
         public ActionResult<List<Grupa>> GetAll()
@@ -43,9 +47,9 @@ namespace _6_1_drustvena_mreza.Controllers
         public ActionResult<Grupa> Create([FromBody] Grupa newGrupa)
         {   
             int rowsAfected = groupDbRepo.NewGroup(newGrupa);
-            if (rowsAfected == 0 || string.IsNullOrWhiteSpace(newGrupa.Ime) || string.IsNullOrWhiteSpace(newGrupa.DatumOsnivanja.ToString("yyyy-MM-dd")))
+            if (rowsAfected == 0 || rowsAfected == null || string.IsNullOrWhiteSpace(newGrupa.Ime) || string.IsNullOrWhiteSpace(newGrupa.DatumOsnivanja.ToString("yyyy-MM-dd")))
             {
-                return BadRequest();
+                return BadRequest("Neispravni podaci");
             }
             
 
@@ -56,27 +60,39 @@ namespace _6_1_drustvena_mreza.Controllers
         public ActionResult<Grupa> Update(int grupaId, [FromBody] Grupa grupaAzurirana)
         {
             Grupa grupa = groupDbRepo.GetGroup(grupaId);
-            grupa.Ime = grupaAzurirana.Ime;
-            grupa.DatumOsnivanja = grupaAzurirana.DatumOsnivanja;
-            int rowsAfected = groupDbRepo.UpdateGroup(grupaId,grupa);
             if ( string.IsNullOrWhiteSpace(grupaAzurirana.Ime) || string.IsNullOrWhiteSpace(grupaAzurirana.DatumOsnivanja.ToString("yyyy-MM-dd")))
             {
                 return BadRequest();
             }
-            if (rowsAfected == 0 || grupa == null)
+            if (grupa == null)
+            {
+                return NotFound("Takva grupa ne postoji");
+            }
+            grupa.Ime = grupaAzurirana.Ime;
+            grupa.DatumOsnivanja = grupaAzurirana.DatumOsnivanja;
+            int rowsAfected = groupDbRepo.UpdateGroup(grupaId,grupa);
+            
+            if (rowsAfected == 0 || rowsAfected ==null || grupa == null)
             {
                 return NotFound();
             }
+
+            
             return Ok(grupaAzurirana);
         }
 
         [HttpDelete("{grupaId}")]
         public ActionResult Delete(int grupaId)
         {
+            Grupa grupa = groupDbRepo.GetGroup(grupaId);
+            if (grupa == null)
+            {
+                return NotFound("Takva grupa ne postoji");
+            }
             int rowsAfected = groupDbRepo.DeleteGroup(grupaId); 
             if (rowsAfected == 0)
             {
-                return NotFound();
+                return NotFound("Grupa nije obrisana, doslo je do greske");
             }
             return NoContent();
         }
