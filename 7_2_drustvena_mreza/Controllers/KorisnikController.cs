@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text.RegularExpressions;
 using _6_1_drustvena_mreza.DOMEN;
 using _6_1_drustvena_mreza.REPO;
 using _7_2_drustvena_mreza.REPO;
@@ -11,98 +12,145 @@ namespace _6_1_Drustvena_Mreza.Controllers
     [ApiController]
     public class KorisnikController : ControllerBase
     {
-        private KorisnikRepo korisnikRepo = new KorisnikRepo();
+        //private KorisnikRepo korisnikRepo = new KorisnikRepo();
         private UserDbRepository userDbRepository = new UserDbRepository();
 
         [HttpGet]
         public ActionResult<List<Korisnik>> GetAll()
-        {
-            List<Korisnik> korisnici = userDbRepository.GetAll();
-            if (korisnici == null)
+        { 
+            try
             {
-                return NotFound("Ne postoji ni jedna grupa");
+                List<Korisnik> korisnici = userDbRepository.GetAll();
+
+                if (korisnici == null)
+                {
+                    return NotFound("No users found");
+                }
+                return Ok(korisnici);
             }
-            return Ok(korisnici);
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR] An exception occurred in GetAll: {ex.Message}");
+                return Problem("An unexpected error occurred while retrieving the list of users.");
+            }
+            
         }
 
         [HttpGet("{id}")]
         public ActionResult<Korisnik> GetById(int id)
         {
-            Korisnik korisnik = userDbRepository.GetById(id);
-
-            if (korisnik == null)
+            try
             {
-                return NotFound();
-            }
-            return Ok(korisnik);
-        }
+                Korisnik korisnik = userDbRepository.GetById(id);
 
+                if (korisnik == null)
+                {
+                    return NotFound("User with the specified ID was not found.");
+                }
+                return Ok(korisnik);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR] An exception occurred in GetById: {ex.Message}");
+                return Problem("An unexpected error occurred while retrieving the user.");
+            }
+            
+        }
 
         [HttpPost]
         public ActionResult<Korisnik> Create([FromBody] Korisnik noviKorisnik)
         {
-            if (string.IsNullOrWhiteSpace(noviKorisnik.KorisnickoIme) || string.IsNullOrWhiteSpace(noviKorisnik.Ime) || string.IsNullOrWhiteSpace(noviKorisnik.Prezime) || string.IsNullOrWhiteSpace(noviKorisnik.DatumRodjenja.ToString("yyyy-MM-dd")))
+            try
             {
-                return BadRequest();
+                if (string.IsNullOrWhiteSpace(noviKorisnik.KorisnickoIme) ||
+                    string.IsNullOrWhiteSpace(noviKorisnik.Ime) ||
+                    string.IsNullOrWhiteSpace(noviKorisnik.Prezime) ||
+                    string.IsNullOrWhiteSpace(noviKorisnik.DatumRodjenja.ToString("yyyy-MM-dd")))
+                {
+                    return BadRequest("Invalid input. All fields must be filled out.");
+                }
+
+                int lastID = userDbRepository.Create(noviKorisnik);
+
+                if (lastID == 0)
+                {
+                    return Problem("Failed to create the user. Please try again.");
+                }
+
+                return Ok(noviKorisnik);
             }
-
-            noviKorisnik.Id = MaxId(KorisnikRepo.korisnikRepo.Keys.ToList());
-            KorisnikRepo.korisnikRepo[noviKorisnik.Id] = noviKorisnik;
-            korisnikRepo.Sacuvaj();
-
-            return Ok(noviKorisnik);
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR] An exception occurred in Create: {ex.Message}");
+                return Problem("An unexpected error occurred while creating the user.");
+            }
+            
         }
 
 
         [HttpPut("{id}")]
         public ActionResult<Korisnik> Update(int id, [FromBody] Korisnik korisnikAzuriran)
         {
-            if (string.IsNullOrWhiteSpace(korisnikAzuriran.KorisnickoIme) || string.IsNullOrWhiteSpace(korisnikAzuriran.Ime) || string.IsNullOrWhiteSpace(korisnikAzuriran.Prezime) || string.IsNullOrWhiteSpace(korisnikAzuriran.DatumRodjenja.ToString("yyyy-MM-dd")))
+            try
             {
-                return BadRequest();
+                if (string.IsNullOrWhiteSpace(korisnikAzuriran.KorisnickoIme) || 
+                    string.IsNullOrWhiteSpace(korisnikAzuriran.Ime) || 
+                    string.IsNullOrWhiteSpace(korisnikAzuriran.Prezime) || 
+                    string.IsNullOrWhiteSpace(korisnikAzuriran.DatumRodjenja.ToString("yyyy-MM-dd")))
+                {
+                    return BadRequest();
+                }
+
+                Korisnik korisnik = userDbRepository.GetById(id);
+
+                if (korisnik == null)
+                {
+                    return NotFound("User with the specified ID was not found.");
+                }
+
+                korisnik.KorisnickoIme = korisnikAzuriran.KorisnickoIme;
+                korisnik.Ime = korisnikAzuriran.Ime;
+                korisnik.Prezime = korisnikAzuriran.Prezime;
+                korisnik.DatumRodjenja = korisnikAzuriran.DatumRodjenja;
+
+                int rowsAffected = userDbRepository.Update(id, korisnik);
+
+                if (rowsAffected == 0)
+                {
+                    return Problem("Update failed. Please try again.");
+                }
+
+                return Ok(korisnikAzuriran);
             }
-            if (!KorisnikRepo.korisnikRepo.ContainsKey(id))
+            catch (Exception ex)
             {
-                return NotFound();
+                Console.WriteLine($"[ERROR] An exception occurred in Update: {ex.Message}");
+                return Problem("An unexpected error occurred while updating the user.");
             }
-
-            Korisnik korisnik = KorisnikRepo.korisnikRepo[id];
-            korisnik.KorisnickoIme = korisnikAzuriran.KorisnickoIme;
-            korisnik.Ime = korisnikAzuriran.Ime;
-            korisnik.Prezime = korisnikAzuriran.Prezime;
-            korisnik.DatumRodjenja = korisnikAzuriran.DatumRodjenja;
-            korisnikRepo.Sacuvaj();
-
-            return Ok(korisnik);
+            
         }
 
         [HttpDelete("{id}")]
         public ActionResult Delete(int id)
         {
-            if (!KorisnikRepo.korisnikRepo.ContainsKey(id))
+            try
             {
-                return NotFound();
-            }
+                int rowsAfected = userDbRepository.Delete(id);
 
-            KorisnikRepo.korisnikRepo.Remove(id);
-            korisnikRepo.Sacuvaj();
-
-            return NoContent();
-        }
-
-
-        private int MaxId(List<int> identifikatori)
-        {
-            int maxId = 0;
-            foreach (int id in identifikatori)
-            {
-                if (id > maxId)
+                if (rowsAfected == 0)
                 {
-                    maxId = id;
+                    return NotFound("User with the specified ID was not found.");
                 }
+                return NoContent();
             }
-            return maxId + 1;
-        }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR] An exception occurred in Delete: {ex.Message}");
+                return Problem("An unexpected error occurred while deleting the user.");
+            }
+
+           
+        }      
                
     }
 }
