@@ -5,6 +5,7 @@ using _7_2_drustvena_mreza.REPO;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.Sqlite;
+using static System.Reflection.Metadata.BlobBuilder;
 
 namespace _6_1_drustvena_mreza.Controllers
 {
@@ -12,73 +13,134 @@ namespace _6_1_drustvena_mreza.Controllers
     [ApiController]
     public class GrupaController : ControllerBase
     {
-        private GrupaRepo grupaRepo = new GrupaRepo();
-        private KorisnikRepo korisnikRepo = new KorisnikRepo();
-        private GroupDbRepo groupDbRepo = new GroupDbRepo();
 
-        // Get api/groups
-        [HttpGet]
-        public ActionResult<List<Grupa>> GetAll()
+        private readonly GroupDbRepo groupDbRepo;
+
+        // Konstruktor koji poziva ASP.NET i automatski dostavlja instancu za IConfiguration parametar
+        public GrupaController(IConfiguration configuration)
         {
-            List<Grupa> grupe = groupDbRepo.GetAll();
-            if (grupe == null) 
-            { 
-                return NotFound("Ne postoji ni jedna grupa");
+            groupDbRepo = new GroupDbRepo(configuration);
+        }
+        // Get api/groups/?page={page}&pageSize={pageSize}
+        [HttpGet]
+        public ActionResult GetPaged([FromQuery] int page = 1, [FromQuery] int pageSize=10)
+        {
+            if (page < 1 || pageSize < 1)
+            {
+                return BadRequest("Page and PageSize must be greater than zero.");
             }
-            return Ok(grupe);
+            try
+            {
+                List<Grupa> grupe = groupDbRepo.GetPaged(page, pageSize);
+                int totalCount = groupDbRepo.CountAll();
+                if (grupe == null)
+                {
+                    return NotFound("Ne postoji ni jedna grupa");
+                }
+                Object result = new
+                {
+                    Data = grupe,
+                    TotalCount = totalCount
+                };
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return Problem("Desila se greska tokom dobavljanja podataka");
+            }
+           
         }
         [HttpGet("{grupaId}")]
         public ActionResult<Grupa> GetById(int grupaId)
-        {   
-            Grupa grupa = groupDbRepo.GetGroup(grupaId);
-            if (grupa ==null)
+        {
+            try
             {
-                return NotFound("Takva grupa ne postoji");
+                Grupa grupa = groupDbRepo.GetGroup(grupaId);
+                if (grupa ==null)
+                {
+                    return NotFound("Takva grupa ne postoji");
+                }
+                return Ok(grupa);
             }
-            return Ok(grupa);
+            catch (Exception ex)
+            {
+                return Problem("Desila se greska tokom dobavljanja podataka");
+            }
+
         }
         
         // POST api/groups
         [HttpPost]
         public ActionResult<Grupa> Create([FromBody] Grupa newGrupa)
-        {   
-            int rowsAfected = groupDbRepo.NewGroup(newGrupa);
-            if (rowsAfected == 0 || string.IsNullOrWhiteSpace(newGrupa.Ime) || string.IsNullOrWhiteSpace(newGrupa.DatumOsnivanja.ToString("yyyy-MM-dd")))
+        {
+            try
             {
-                return BadRequest();
+                int rowsAfected = groupDbRepo.NewGroup(newGrupa);
+                if (rowsAfected == 0 || rowsAfected == null || string.IsNullOrWhiteSpace(newGrupa.Ime) || string.IsNullOrWhiteSpace(newGrupa.DatumOsnivanja.ToString("yyyy-MM-dd")))
+                {
+                    return BadRequest("Neispravni podaci");
+                }
+                return Ok(newGrupa);
             }
-            
-
-            return Ok(newGrupa);
+            catch (Exception ex)
+            {
+                return Problem("Desila se greska tokom snimanja podataka");
+            }
         }
 
         [HttpPut("{grupaId}")]
         public ActionResult<Grupa> Update(int grupaId, [FromBody] Grupa grupaAzurirana)
         {
-            Grupa grupa = groupDbRepo.GetGroup(grupaId);
-            grupa.Ime = grupaAzurirana.Ime;
-            grupa.DatumOsnivanja = grupaAzurirana.DatumOsnivanja;
-            int rowsAfected = groupDbRepo.UpdateGroup(grupaId,grupa);
-            if ( string.IsNullOrWhiteSpace(grupaAzurirana.Ime) || string.IsNullOrWhiteSpace(grupaAzurirana.DatumOsnivanja.ToString("yyyy-MM-dd")))
+            try
             {
-                return BadRequest();
+                Grupa grupa = groupDbRepo.GetGroup(grupaId);
+                if ( string.IsNullOrWhiteSpace(grupaAzurirana.Ime) || string.IsNullOrWhiteSpace(grupaAzurirana.DatumOsnivanja.ToString("yyyy-MM-dd")))
+                {
+                    return BadRequest();
+                }
+                if (grupa == null)
+                {
+                    return NotFound("Takva grupa ne postoji");
+                }
+                grupa.Ime = grupaAzurirana.Ime;
+                grupa.DatumOsnivanja = grupaAzurirana.DatumOsnivanja;
+                int rowsAfected = groupDbRepo.UpdateGroup(grupaId,grupa);
+            
+                if (rowsAfected == 0 || rowsAfected ==null || grupa == null)
+                {
+                    return NotFound();
+                }
+                return Ok(grupaAzurirana);
             }
-            if (rowsAfected == 0 || grupa == null)
+            catch (Exception ex)
             {
-                return NotFound();
+                return Problem("Desila se greska tokom azuriranja podataka");
             }
-            return Ok(grupaAzurirana);
+
         }
 
         [HttpDelete("{grupaId}")]
         public ActionResult Delete(int grupaId)
         {
-            int rowsAfected = groupDbRepo.DeleteGroup(grupaId); 
-            if (rowsAfected == 0)
+            try
             {
-                return NotFound();
+                Grupa grupa = groupDbRepo.GetGroup(grupaId);
+                if (grupa == null)
+                {
+                    return NotFound("Takva grupa ne postoji");
+                }
+                int rowsAfected = groupDbRepo.DeleteGroup(grupaId); 
+                if (rowsAfected == 0)
+                {
+                    return NotFound("Grupa nije obrisana, doslo je do greske");
+                }
+                return NoContent();
             }
-            return NoContent();
+            catch (Exception ex)
+            {
+                return Problem("Desila se greska tokom brisanja podataka");
+            }
+
         }
     }
 }
