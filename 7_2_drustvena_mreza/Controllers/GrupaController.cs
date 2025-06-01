@@ -36,7 +36,7 @@ namespace _6_1_drustvena_mreza.Controllers
                 if (grupe == null)
                 {
                     return NotFound("Ne postoji ni jedna grupa");
-                }
+                } 
                 Object result = new
                 {
                     Data = grupe,
