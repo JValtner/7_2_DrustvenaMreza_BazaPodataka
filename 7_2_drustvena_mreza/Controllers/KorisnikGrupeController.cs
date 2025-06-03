@@ -3,6 +3,7 @@ using System.Linq;
 using _6_1_drustvena_mreza.DOMEN;
 using _6_1_drustvena_mreza.REPO;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 
 namespace _6_1_Drustvena_Mreza.Controllers
 {
@@ -10,11 +11,11 @@ namespace _6_1_Drustvena_Mreza.Controllers
     [ApiController]
     public class KorisnikGrupeController : ControllerBase
     {
-        private KorisnikRepo korisnikRepo = new KorisnikRepo();
-        private GrupaRepo grupaRepo = new GrupaRepo();
+        groupDbRepo = new GroupDbRepo(configuration);
+        korisnikDbRepo = new Kor
 
 
-        
+
         [HttpPost("{groupId}")]
         public ActionResult<Korisnik> AddUserToGroup(int korisnikId, int groupId)
         {

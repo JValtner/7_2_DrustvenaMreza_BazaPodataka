@@ -3,7 +3,7 @@ using Microsoft.Data.Sqlite;
 
 namespace _7_2_drustvena_mreza.REPO
 {
-    public class UserDbRepository
+    public class UserDbRepo
     {
         public List<Korisnik> GetAll()
         {

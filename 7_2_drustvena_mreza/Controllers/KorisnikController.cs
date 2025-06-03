@@ -13,7 +13,7 @@ namespace _6_1_Drustvena_Mreza.Controllers
     public class KorisnikController : ControllerBase
     {
         //private KorisnikRepo korisnikRepo = new KorisnikRepo();
-        private UserDbRepository userDbRepository = new UserDbRepository();
+        private UserDbRepo userDbRepository = new UserDbRepo();
 
         [HttpGet]
         public ActionResult<List<Korisnik>> GetAll()
