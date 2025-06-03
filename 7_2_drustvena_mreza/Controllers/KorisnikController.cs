@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Text.RegularExpressions;
 using _6_1_drustvena_mreza.DOMEN;
-using _6_1_drustvena_mreza.REPO;
 using _7_2_drustvena_mreza.REPO;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.Sqlite;
@@ -12,28 +11,50 @@ namespace _6_1_Drustvena_Mreza.Controllers
     [ApiController]
     public class KorisnikController : ControllerBase
     {
-        //private KorisnikRepo korisnikRepo = new KorisnikRepo();
-        private UserDbRepo userDbRepository = new UserDbRepo();
+        
+        private readonly UserDbRepo userDbRepo;
 
+        public KorisnikController(IConfiguration configuration)
+        {
+            userDbRepo = new UserDbRepo(configuration);
+        }
+        
         [HttpGet]
-        public ActionResult<List<Korisnik>> GetAll()
-        { 
+        public ActionResult GetPaged([FromQuery] int? page , [FromQuery] int? pageSize )
+        {
+            if (page < 1 || pageSize < 1)
+            {
+                return BadRequest("Page and PageSize must be greater than zero.");
+            }
             try
             {
-                List<Korisnik> korisnici = userDbRepository.GetAll();
-
-                if (korisnici == null)
+                if (page == null || pageSize == null)
                 {
-                    return NotFound("No users found");
+                    // Return all when no pagination parameters are provided
+                    var allKorisnici = userDbRepo.GetAll();
+                    return Ok(allKorisnici);
                 }
-                return Ok(korisnici);
+
+                List<Korisnik> korisnici = userDbRepo.GetPaged(page.Value,pageSize.Value);
+                int totalCount = userDbRepo.CountAll();
+                if (korisnici== null)
+                {
+                    return NotFound("Ne postoji ni jedna grupa");
+                }
+                Object result = new
+                {
+                    Data = korisnici,
+                    TotalCount = totalCount
+                };
+                return Ok(result);
+
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[ERROR] An exception occurred in GetAll: {ex.Message}");
+                Console.WriteLine($"[ERROR] An exception occurred in GetPaged: {ex.Message}");
                 return Problem("An unexpected error occurred while retrieving the list of users.");
             }
-            
+
         }
 
         [HttpGet("{id}")]
@@ -41,7 +62,7 @@ namespace _6_1_Drustvena_Mreza.Controllers
         {
             try
             {
-                Korisnik korisnik = userDbRepository.GetById(id);
+                Korisnik korisnik = userDbRepo.GetById(id);
 
                 if (korisnik == null)
                 {
@@ -60,23 +81,18 @@ namespace _6_1_Drustvena_Mreza.Controllers
         [HttpPost]
         public ActionResult<Korisnik> Create([FromBody] Korisnik noviKorisnik)
         {
-            try
-            {
-                if (string.IsNullOrWhiteSpace(noviKorisnik.KorisnickoIme) ||
+            if (    noviKorisnik == null ||
+                    string.IsNullOrWhiteSpace(noviKorisnik.KorisnickoIme) ||
                     string.IsNullOrWhiteSpace(noviKorisnik.Ime) ||
                     string.IsNullOrWhiteSpace(noviKorisnik.Prezime) ||
                     string.IsNullOrWhiteSpace(noviKorisnik.DatumRodjenja.ToString("yyyy-MM-dd")))
-                {
-                    return BadRequest("Invalid input. All fields must be filled out.");
-                }
+            {
+                return BadRequest("Invalid input. All fields must be filled out.");
+            }
 
-                int lastID = userDbRepository.Create(noviKorisnik);
-
-                if (lastID == 0)
-                {
-                    return Problem("Failed to create the user. Please try again.");
-                }
-
+            try
+            {
+                Korisnik kreiraniKorisnik = userDbRepo.Create(noviKorisnik);
                 return Ok(noviKorisnik);
             }
             catch (Exception ex)
@@ -91,36 +107,27 @@ namespace _6_1_Drustvena_Mreza.Controllers
         [HttpPut("{id}")]
         public ActionResult<Korisnik> Update(int id, [FromBody] Korisnik korisnikAzuriran)
         {
+            if (    korisnikAzuriran == null ||
+                    string.IsNullOrWhiteSpace(korisnikAzuriran.KorisnickoIme) ||
+                    string.IsNullOrWhiteSpace(korisnikAzuriran.Ime) ||
+                    string.IsNullOrWhiteSpace(korisnikAzuriran.Prezime) ||
+                    string.IsNullOrWhiteSpace(korisnikAzuriran.DatumRodjenja.ToString("yyyy-MM-dd")))
+            {
+                return BadRequest("Invalid user data.");
+            }
+
             try
             {
-                if (string.IsNullOrWhiteSpace(korisnikAzuriran.KorisnickoIme) || 
-                    string.IsNullOrWhiteSpace(korisnikAzuriran.Ime) || 
-                    string.IsNullOrWhiteSpace(korisnikAzuriran.Prezime) || 
-                    string.IsNullOrWhiteSpace(korisnikAzuriran.DatumRodjenja.ToString("yyyy-MM-dd")))
-                {
-                    return BadRequest();
-                }
-
-                Korisnik korisnik = userDbRepository.GetById(id);
+                korisnikAzuriran.Id = id;
+                Korisnik korisnik = userDbRepo.Update(korisnikAzuriran);
 
                 if (korisnik == null)
                 {
                     return NotFound("User with the specified ID was not found.");
                 }
 
-                korisnik.KorisnickoIme = korisnikAzuriran.KorisnickoIme;
-                korisnik.Ime = korisnikAzuriran.Ime;
-                korisnik.Prezime = korisnikAzuriran.Prezime;
-                korisnik.DatumRodjenja = korisnikAzuriran.DatumRodjenja;
-
-                int rowsAffected = userDbRepository.Update(id, korisnik);
-
-                if (rowsAffected == 0)
-                {
-                    return Problem("Update failed. Please try again.");
-                }
-
                 return Ok(korisnikAzuriran);
+               
             }
             catch (Exception ex)
             {
@@ -135,13 +142,15 @@ namespace _6_1_Drustvena_Mreza.Controllers
         {
             try
             {
-                int rowsAfected = userDbRepository.Delete(id);
+                bool isDeleted = userDbRepo.Delete(id);
 
-                if (rowsAfected == 0)
+                if (isDeleted)
                 {
-                    return NotFound("User with the specified ID was not found.");
-                }
                 return NoContent();
+
+                }
+
+                return NotFound($"User with the specified ID {id} was not found.");
             }
             catch (Exception ex)
             {

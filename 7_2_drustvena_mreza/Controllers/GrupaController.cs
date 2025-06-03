@@ -1,6 +1,5 @@
 ﻿using System.Runtime.CompilerServices;
 using _6_1_drustvena_mreza.DOMEN;
-using _6_1_drustvena_mreza.REPO;
 using _7_2_drustvena_mreza.REPO;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -36,7 +35,7 @@ namespace _6_1_drustvena_mreza.Controllers
                 if (grupe == null)
                 {
                     return NotFound("Ne postoji ni jedna grupa");
-                }
+                } 
                 Object result = new
                 {
                     Data = grupe,
