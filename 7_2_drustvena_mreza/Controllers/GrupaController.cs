@@ -1,12 +1,13 @@
 ﻿using System.Runtime.CompilerServices;
-using _6_1_drustvena_mreza.DOMEN;
+using System.Text.RegularExpressions;
+using _7_2_drustvena_mreza.DOMEN;
 using _7_2_drustvena_mreza.REPO;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.Sqlite;
 using static System.Reflection.Metadata.BlobBuilder;
 
-namespace _6_1_drustvena_mreza.Controllers
+namespace _7_2_drustvena_mreza.Controllers
 {
     [Route("api/groups")]
     [ApiController]
@@ -14,11 +15,13 @@ namespace _6_1_drustvena_mreza.Controllers
     {
 
         private readonly GroupDbRepo groupDbRepo;
+        private readonly GroupMembershipRepo groupMembershipRepo;
 
         // Konstruktor koji poziva ASP.NET i automatski dostavlja instancu za IConfiguration parametar
         public GrupaController(IConfiguration configuration)
         {
             groupDbRepo = new GroupDbRepo(configuration);
+            groupMembershipRepo = new GroupMembershipRepo(configuration);
         }
         // Get api/groups/?page={page}&pageSize={pageSize}
         [HttpGet]
@@ -67,6 +70,7 @@ namespace _6_1_drustvena_mreza.Controllers
             }
 
         }
+        //Korisnici grupe
         
         // POST api/groups
         [HttpPost]

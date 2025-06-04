@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Text.Json.Serialization;
-namespace _6_1_drustvena_mreza.DOMEN
+namespace _7_2_drustvena_mreza.DOMEN
 {
     public class Korisnik
     {

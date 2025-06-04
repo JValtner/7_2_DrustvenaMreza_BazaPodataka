@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Text.RegularExpressions;
-using _6_1_drustvena_mreza.DOMEN;
+using _7_2_drustvena_mreza.DOMEN;
 using _7_2_drustvena_mreza.REPO;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.Sqlite;
 
-namespace _6_1_Drustvena_Mreza.Controllers
+namespace _7_2_drustvena_mreza.Controllers
 {
     [Route("api/korisnik")]
     [ApiController]
@@ -20,7 +20,7 @@ namespace _6_1_Drustvena_Mreza.Controllers
         }
         
         [HttpGet]
-        public ActionResult GetPaged([FromQuery] int? page , [FromQuery] int? pageSize )
+        public ActionResult GetPaged([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
             if (page < 1 || pageSize < 1)
             {
@@ -35,7 +35,7 @@ namespace _6_1_Drustvena_Mreza.Controllers
                     return Ok(allKorisnici);
                 }
 
-                List<Korisnik> korisnici = userDbRepo.GetPaged(page.Value,pageSize.Value);
+                List<Korisnik> korisnici = userDbRepo.GetPaged(page,pageSize);
                 int totalCount = userDbRepo.CountAll();
                 if (korisnici== null)
                 {
@@ -77,6 +77,7 @@ namespace _6_1_Drustvena_Mreza.Controllers
             }
             
         }
+        
 
         [HttpPost]
         public ActionResult<Korisnik> Create([FromBody] Korisnik noviKorisnik)

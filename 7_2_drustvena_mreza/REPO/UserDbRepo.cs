@@ -1,4 +1,4 @@
-﻿using _6_1_drustvena_mreza.DOMEN;
+﻿using _7_2_drustvena_mreza.DOMEN;
 using Microsoft.Data.Sqlite;
 
 namespace _7_2_drustvena_mreza.REPO
@@ -8,10 +8,14 @@ namespace _7_2_drustvena_mreza.REPO
 
         private readonly string connectionString;
 
+        private readonly GroupMembershipRepo groupMembershipRepo;
+
         public UserDbRepo(IConfiguration configuration)
         {
             connectionString = configuration["ConnectionString:SQLiteConnection"];
+            groupMembershipRepo = new GroupMembershipRepo(configuration);
         }
+
         public List<Korisnik> GetAll()
         {
             List<Korisnik> listaKorisnika = new List<Korisnik>();
@@ -32,9 +36,10 @@ namespace _7_2_drustvena_mreza.REPO
                     string Ime = reader["Name"].ToString();
                     string Prezime = reader["Surname"].ToString();
 
-                    DateTime DatumRodjenja = DateTime.ParseExact(reader["Birthday"].ToString(), "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture
-);
+                    DateTime DatumRodjenja = DateTime.ParseExact(reader["Birthday"].ToString(), "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+                    List<Grupa> GrupeKorisnika = groupMembershipRepo.GetMemberships(id);
                     Korisnik k = new Korisnik(id, KorisnickoIme, Ime, Prezime, DatumRodjenja);
+                    k.GrupeKorisnika = GrupeKorisnika;
                     listaKorisnika.Add(k);
                 }
                 return listaKorisnika;
@@ -85,9 +90,10 @@ namespace _7_2_drustvena_mreza.REPO
                     string Ime = reader["Name"].ToString();
                     string Prezime = reader["Surname"].ToString();
 
-                    DateTime DatumRodjenja = DateTime.ParseExact(reader["Birthday"].ToString(), "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture
-);
+                    DateTime DatumRodjenja = DateTime.ParseExact(reader["Birthday"].ToString(), "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+                    List<Grupa> GrupeKorisnika = groupMembershipRepo.GetMemberships(id);
                     Korisnik k = new Korisnik(id, KorisnickoIme, Ime, Prezime, DatumRodjenja);
+                    k.GrupeKorisnika = GrupeKorisnika;
                     listaKorisnika.Add(k);
                 }
                 return listaKorisnika;
