@@ -88,8 +88,8 @@ namespace _7_2_drustvena_mreza.REPO
             }
             catch (FormatException ex)
             {
-                throw;
                 Console.WriteLine($"Greška u konverziji podataka iz baze: {ex.Message}");
+                throw;
             }
             catch (InvalidOperationException ex)
             {

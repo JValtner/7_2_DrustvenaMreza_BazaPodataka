@@ -16,18 +16,11 @@ const response = urlParams.get('response') // Preuzimamo vrednost response param
 
 
 function initializeKorisnike() {
-    let korisnici = []
-    
-    korisnici = loadKorisnike()
-    
-    saveLocalStorage(korisnici)
+    loadKorisnike()
     showSuccess()
 }
 
-function saveLocalStorage(korisnici) {
-    let korisniciJSON = JSON.stringify(korisnici)
-    localStorage.setItem("korisnici", korisniciJSON)
-}
+
 function loadKorisnike(){
   fetch('http://localhost:14117/api/korisnik') 
     .then(response => {
@@ -36,7 +29,10 @@ function loadKorisnike(){
       }
       return response.json()
     })
-    .then(korisnici => createDataTable(korisnici))  
+    .then(responseObj => {
+    const korisnici = responseObj.data
+    createDataTable(korisnici)
+    })
     .catch(error => {                  
       console.error('Error:', error.message)
       alert('An error occurred while loading the data. Please try again.')

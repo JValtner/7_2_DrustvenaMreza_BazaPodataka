@@ -28,13 +28,6 @@ namespace _7_2_drustvena_mreza.Controllers
             }
             try
             {
-                if (page == null || pageSize == null)
-                {
-                    // Return all when no pagination parameters are provided
-                    var allKorisnici = userDbRepo.GetAll();
-                    return Ok(allKorisnici);
-                }
-
                 List<Korisnik> korisnici = userDbRepo.GetPaged(page,pageSize);
                 int totalCount = userDbRepo.CountAll();
                 if (korisnici== null)
