@@ -1,19 +1,16 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Text.Json.Serialization;
-namespace _6_1_drustvena_mreza.DOMEN
+namespace _7_2_drustvena_mreza.DOMEN
 {
     public class Korisnik
     {
-
-        [JsonIgnore]
         public int Id { get; set; }
         public string KorisnickoIme { get; set; }
         public string Ime { get; set; }
         public string Prezime { get; set; }
         
         public DateTime DatumRodjenja { get; set; }
-        [JsonIgnore]
         public List<Grupa>? GrupeKorisnika { get; set; } = new List<Grupa>();
 
         public Korisnik (int id, string korisnickoIme, string ime, string prezime, DateTime datumRodjenja)
