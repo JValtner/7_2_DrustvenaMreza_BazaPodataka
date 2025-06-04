@@ -1,27 +1,26 @@
 ﻿using System;
 using System.Text.RegularExpressions;
-using _6_1_drustvena_mreza.DOMEN;
-using _6_1_drustvena_mreza.REPO;
+using _7_2_drustvena_mreza.DOMEN;
 using _7_2_drustvena_mreza.REPO;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.Sqlite;
 
-namespace _6_1_Drustvena_Mreza.Controllers
+namespace _7_2_drustvena_mreza.Controllers
 {
     [Route("api/korisnik")]
     [ApiController]
     public class KorisnikController : ControllerBase
     {
         
-        private readonly UserDbRepository userDbRepository;
+        private readonly UserDbRepo userDbRepo;
 
         public KorisnikController(IConfiguration configuration)
         {
-            userDbRepository = new UserDbRepository(configuration);
+            userDbRepo = new UserDbRepo(configuration);
         }
         
         [HttpGet]
-        public ActionResult GetPaged([FromQuery] int? page , [FromQuery] int? pageSize )
+        public ActionResult GetPaged([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
             if (page < 1 || pageSize < 1)
             {
@@ -32,12 +31,12 @@ namespace _6_1_Drustvena_Mreza.Controllers
                 if (page == null || pageSize == null)
                 {
                     // Return all when no pagination parameters are provided
-                    var allKorisnici = userDbRepository.GetAll();
+                    var allKorisnici = userDbRepo.GetAll();
                     return Ok(allKorisnici);
                 }
 
-                List<Korisnik> korisnici = userDbRepository.GetPaged(page.Value,pageSize.Value);
-                int totalCount = userDbRepository.CountAll();
+                List<Korisnik> korisnici = userDbRepo.GetPaged(page,pageSize);
+                int totalCount = userDbRepo.CountAll();
                 if (korisnici== null)
                 {
                     return NotFound("Ne postoji ni jedna grupa");
@@ -63,7 +62,7 @@ namespace _6_1_Drustvena_Mreza.Controllers
         {
             try
             {
-                Korisnik korisnik = userDbRepository.GetById(id);
+                Korisnik korisnik = userDbRepo.GetById(id);
 
                 if (korisnik == null)
                 {
@@ -78,6 +77,7 @@ namespace _6_1_Drustvena_Mreza.Controllers
             }
             
         }
+        
 
         [HttpPost]
         public ActionResult<Korisnik> Create([FromBody] Korisnik noviKorisnik)
@@ -93,7 +93,7 @@ namespace _6_1_Drustvena_Mreza.Controllers
 
             try
             {
-                Korisnik kreiraniKorisnik = userDbRepository.Create(noviKorisnik);
+                Korisnik kreiraniKorisnik = userDbRepo.Create(noviKorisnik);
                 return Ok(noviKorisnik);
             }
             catch (Exception ex)
@@ -120,7 +120,7 @@ namespace _6_1_Drustvena_Mreza.Controllers
             try
             {
                 korisnikAzuriran.Id = id;
-                Korisnik korisnik = userDbRepository.Update(korisnikAzuriran);
+                Korisnik korisnik = userDbRepo.Update(korisnikAzuriran);
 
                 if (korisnik == null)
                 {
@@ -143,7 +143,7 @@ namespace _6_1_Drustvena_Mreza.Controllers
         {
             try
             {
-                bool isDeleted = userDbRepository.Delete(id);
+                bool isDeleted = userDbRepo.Delete(id);
 
                 if (isDeleted)
                 {

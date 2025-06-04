@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using _6_1_drustvena_mreza.DOMEN;
+using _7_2_drustvena_mreza.DOMEN;
 using Microsoft.Data.Sqlite;
 namespace _7_2_drustvena_mreza.REPO
 {
@@ -33,6 +33,7 @@ namespace _7_2_drustvena_mreza.REPO
                     string ime = reader["Name"].ToString();
                     DateTime datumOsnivanja = DateTime.ParseExact(reader["CreationDate"].ToString(), "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
                     Grupa g = new Grupa(id, ime, datumOsnivanja);
+
                     listaGrupa.Add(g);
                 }
                 return listaGrupa;

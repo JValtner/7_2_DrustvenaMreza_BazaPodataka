@@ -27,7 +27,7 @@ function saveLocalStorage(grupe) {
 }
 
 function loadGroups(){
-  fetch('http://localhost:14117/api/groups?page=1&pageSize=2') //Dodati funkciju za paginaciju
+  fetch('http://localhost:14117/api/groups') //Dodati funkciju za paginaciju ?page=1&pageSize=2
     .then(response => {
       if (!response.ok) {
         throw new Error('Request failed. Status: ' + response.status)
@@ -86,7 +86,7 @@ function createDataTable(grupe) {
             })
             .catch(error =>{
                 console.error('Error: ' +error.message)
-                if(error.response && error,response.status === 404){
+                if(error.response && error.response.status === 404){
                     alert('Group does not exist')
                 } else {
                     alert('An error occured while deleting the the group. Please try again.')
@@ -127,6 +127,7 @@ function showSuccess() {
         successMsg.style.opacity = "0"
     }, 3000)
 }
+
 
 
 document.addEventListener('DOMContentLoaded', initializeGroup)
