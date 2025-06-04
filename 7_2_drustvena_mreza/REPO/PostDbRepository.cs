@@ -1,4 +1,4 @@
-﻿using _6_1_drustvena_mreza.DOMEN;
+﻿using _7_2_drustvena_mreza.DOMEN;
 using Microsoft.Data.Sqlite;
 
 namespace _7_2_drustvena_mreza.REPO
@@ -11,7 +11,7 @@ namespace _7_2_drustvena_mreza.REPO
         {
             connectionString = configuration["ConnectionString:SQLiteConnection"];
         }
-
+                
         public List<Post> GetAll()
         {
             List<Post> allPosts = new List<Post>();
@@ -39,11 +39,11 @@ namespace _7_2_drustvena_mreza.REPO
                     if (reader["UserId"] != DBNull.Value)
                     {
                         p.User = new Korisnik(
-                        
+                            
                             Convert.ToInt32(reader["Id"]),
                             Convert.ToString(reader["Username"]),
-                            Convert.ToString(reader["Username"]),
-                            Convert.ToString(reader["Username"]),
+                            Convert.ToString(reader["Name"]),
+                            Convert.ToString(reader["Surname"]),
                             DateTime.ParseExact(reader["Birthday"].ToString(), "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)
                         );
                     }

@@ -1,13 +1,7 @@
-﻿using System.Runtime.CompilerServices;
-using _6_1_drustvena_mreza.DOMEN;
-using _6_1_drustvena_mreza.REPO;
-using _7_2_drustvena_mreza.REPO;
-using Microsoft.AspNetCore.Http;
+﻿using _7_2_drustvena_mreza.REPO;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Data.Sqlite;
-using static System.Reflection.Metadata.BlobBuilder;
 
-namespace _6_1_drustvena_mreza.Controllers
+namespace _7_2_drustvena_mreza.DOMEN
 {
     [Route("api/posts")]
     [ApiController]

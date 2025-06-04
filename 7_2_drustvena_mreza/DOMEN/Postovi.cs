@@ -1,7 +1,8 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using _7_2_drustvena_mreza.DOMEN;
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-namespace _6_1_drustvena_mreza.DOMEN
+namespace _7_2_drustvena_mreza.DOMEN
 {
     public class Post
     {
@@ -12,7 +13,7 @@ namespace _6_1_drustvena_mreza.DOMEN
         [Required]
         public DateTime PostDate { get; set; }
 
-        public Korisnik User { get; set; }
+        public Korisnik User { get; set; } 
 
         public Post(int id, int userID, string content, DateTime postDate)
         {
