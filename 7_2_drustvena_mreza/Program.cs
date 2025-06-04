@@ -1,5 +1,5 @@
 
-namespace _6_1_drustvena_mreza
+namespace _7_2_drustvena_mreza
 {
     public class Program
     {
