@@ -13,8 +13,7 @@ namespace _7_2_drustvena_mreza.DOMEN
         [Required]
         public DateTime PostDate { get; set; }
 
-        public Korisnik User { get; set; } 
-
+        public Korisnik User { get; set; }      
         public Post(int id, int userID, string content, DateTime postDate)
         {
             this.Id = id;
@@ -23,4 +22,6 @@ namespace _7_2_drustvena_mreza.DOMEN
             this.PostDate= postDate;
         }
     }
+
+
 }

@@ -1,5 +1,7 @@
 ﻿using _7_2_drustvena_mreza.REPO;
 using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace _7_2_drustvena_mreza.DOMEN
 {
@@ -15,7 +17,7 @@ namespace _7_2_drustvena_mreza.DOMEN
         {
             _postRepository = new PostDbRepository(configuration);
         }
-        // Get api/groups/?page={page}&pageSize={pageSize}
+
         [HttpGet]
         public ActionResult<List<Post>> GetAllPosts()
         {
@@ -23,6 +25,40 @@ namespace _7_2_drustvena_mreza.DOMEN
             {
                 var posts = _postRepository.GetAll();
                 return Ok(posts);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+        public class CreatePostDto
+        {
+            [JsonIgnore]
+            public int Id { get; set; }
+            [JsonIgnore]
+            public int UserId { get; set; }
+            [Required]
+            public string Content { get; set; }
+            [Required]
+            public DateTime PostDate { get; set; }
+        }
+
+        [HttpPost("{userId}")]
+        public ActionResult<CreatePostDto> AddPost( [FromBody] CreatePostDto noviPost, int userId )
+        {
+            try
+            {
+                var post = new Post
+                (
+                    noviPost.Id,
+                    noviPost.UserId,
+                    noviPost.Content,
+                    noviPost.PostDate
+                );
+                
+                Post kreiraniPost = _postRepository.NewPost(post, userId);
+                return Ok(noviPost);
             }
             catch (Exception ex)
             {
