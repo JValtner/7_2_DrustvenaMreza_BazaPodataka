@@ -66,5 +66,22 @@ namespace _7_2_drustvena_mreza.DOMEN
             }
         }
 
+        [HttpDelete("{postId}")]
+        public ActionResult RemovePost(int postId)
+        {
+            try
+            {
+                int rowsAfected = _postRepository.DeletePost(postId);
+                if (rowsAfected == 0 || rowsAfected == null || postId == null || postId == null)
+                {
+                    return BadRequest("Neispravni podaci");
+                }
+                return Ok(rowsAfected);
+            }
+            catch (Exception ex)
+            {
+                return Problem("Desila se greska tokom snimanja podataka");
+            }           
+        }
     }
 }
